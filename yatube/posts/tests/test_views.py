@@ -5,7 +5,7 @@ from django.urls import reverse
 from django import forms
 
 from ..forms import PostForm
-from ..models import Group, Post, Follow, Comment
+from ..models import Group, Post, Follow
 from yatube import settings
 
 User = get_user_model()
@@ -140,7 +140,6 @@ class CorrectTemplateTests(TestCase):
         self.assertNotEqual(response.content, old_content)
 
 
-
 class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -186,6 +185,7 @@ class PaginatorViewsTest(TestCase):
                             reverse(address, args=args) + page
                         )
         self.assertEqual(len(response.context['page_obj']), units)
+
 
 class CommentFollowTests(TestCase):
     @classmethod

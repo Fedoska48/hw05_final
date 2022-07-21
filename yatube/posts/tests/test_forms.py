@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Group, Post, Comment
+from ..models import Group, Post
 
 User = get_user_model()
 
@@ -32,7 +32,6 @@ class PostFormsTest(TestCase):
             text='Тестовая пост1234',
             group=cls.group,
         )
-
 
     @classmethod
     def tearDownClass(cls):
@@ -86,7 +85,6 @@ class PostFormsTest(TestCase):
                 image='posts/small.gif'
             ).exists()
         )
-
 
     def test_edit_form(self):
         self.group_2 = Group.objects.create(
@@ -194,7 +192,8 @@ class CommentFormsTest(TestCase):
         )
         redirect = str(reverse('users:login') + '?next='
                                 + reverse('posts:add_comment',
-                                          args=(self.post.id,)))
+                                          args=(self.post.id,))
+                       )
         self.assertRedirects(response, redirect)
         self.assertEqual(self.post.comments.count(), comm_count)
 
