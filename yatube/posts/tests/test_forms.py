@@ -191,8 +191,8 @@ class CommentFormsTest(TestCase):
             follow=True,
         )
         redirect = str(reverse('users:login') + '?next='
-                                + reverse('posts:add_comment',
-                                          args=(self.post.id,))
+                       + reverse('posts:add_comment',
+                                 args=(self.post.id,))
                        )
         self.assertRedirects(response, redirect)
         self.assertEqual(self.post.comments.count(), comm_count)
