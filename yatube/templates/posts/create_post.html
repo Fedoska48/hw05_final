@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if form.instance.pk %}
+    Редактировать запись
+  {% else %}
+    Добавить запись
+  {% endif %} <!--p> Не поместится в 79 символов, если вытянуть if-else-endif </p-->
+{% endblock %}
+
+{% block content %}
+  {% load user_filters %}
+  <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8 p-5">
+          <div class="card">
+            <div class="card-header">
+              {% if form.instance.pk %}
+                Редактировать запись
+              {% else %}
+                Добавить запись
+              {% endif %} <!--p> Не поместится в 79 символов, если вытянуть if-else-endif </p-->
+            </div>
+          <div class="card-body">
+            {% include 'includes/error_check.html' %}
+            <form method="post" action="{% if form.instance.pk %}
+                                   {% url 'posts:post_edit' form.instance.pk %}
+                                   {% else %}
+                                   {% url 'posts:post_create' %}
+                                   {% endif %}"
+                                    enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                {% include 'includes/form_cycle.html' %}
+                {% endfor %}
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                   {% if form.instance.pk %}Сохранить {% else %} Добавить {% endif %}
+                </button>
+              </div>
+            </form>
+          </div>
+          </div>
+        </div>
+      </div>
+{% endblock %}

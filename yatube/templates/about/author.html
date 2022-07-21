@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+<h1>Привет, я Никита</h1>
+<p>
+  <ul>
+  <li> Подключил бутсрап.
+  <li> Подключил картинку.
+  <li> Забыл подключить статику в шаблон и несколько минут думал что не так.
+  <li> Добавил перенос картинки на абзац.
+  <li> Потом попробу еще сделать отступ.
+
+  <li> Добавил фото
+  <li> Мои Гитхаб: <b> https://github.com/Fedoska48 </b>
+  </ul>
+</p>
+<p>
+  <ul>
+  <img src="{% static 'img/pictures/similan.jpg' %}">
+  </ul>
+</p>
+{% endblock %} 
