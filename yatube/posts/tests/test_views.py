@@ -33,22 +33,7 @@ class CorrectTemplateTests(TestCase):
         self.authorized_client.force_login(self.user)
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
-
-    def test_image_context(self):
-        """Image в контексте"""
-        image_urls = (
-            ('posts:index', None),
-            ('posts:group_list', (self.group.slug,)),
-            ('posts:profile', (self.user.username,)),
-            ('posts:post_detail', (self.post.id,))
-        )
-        for address, args in image_urls:
-            with self.subTest(address=address):
-                response = self.authorized_author.get(
-                    reverse(address, args=args)
-                )
-                post = response.context.get('image')
-                self.assertEqual(post.image, self.post.image)
+        cache.clear()
 
     def check_func(self, response, bol=False):
         """Вспомогательная функция для проверки корректного контекста"""
@@ -60,6 +45,7 @@ class CorrectTemplateTests(TestCase):
         self.assertEqual(post.author, self.author)
         self.assertEqual(post.group, self.group)
         self.assertEqual(post.pub_date, self.post.pub_date)
+        self.assertEqual(post.image, self.post.image)
 
     def test_index_pages_show_correct_context(self):
         """Проверка контекста в index"""
@@ -255,14 +241,3 @@ class CommentFollowTests(TestCase):
             )
         )
         self.assertEqual(follow_count, follow_count)
-
-    def test_comments(self):
-        self.comment = Comment.objects.create(
-                text='Тестовый коммент',
-                post=self.post,
-                author=self.follower
-            )
-        response = self.authorized_following_client.get(
-            reverse('posts:post_detail', (self.post.id,))
-        )
-        self.assertContains(response, self.comment.text)

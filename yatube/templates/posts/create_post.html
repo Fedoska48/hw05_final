@@ -30,9 +30,7 @@
                                    {% endif %}"
                                     enctype="multipart/form-data">
                 {% csrf_token %}
-                {% for field in form %}
                 {% include 'includes/form_cycle.html' %}
-                {% endfor %}
               <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary">
                    {% if form.instance.pk %}Сохранить {% else %} Добавить {% endif %}

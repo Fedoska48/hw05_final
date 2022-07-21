@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import TestCase, Client
 from django.urls import reverse
 
@@ -39,6 +40,7 @@ class FirstAccess(TestCase):
             ('posts:post_create', None),
             ('posts:post_edit', (self.post.id,))
         )
+        cache.clear()
 
     def test_guest_access(self):
         """Доступность для гостя."""
