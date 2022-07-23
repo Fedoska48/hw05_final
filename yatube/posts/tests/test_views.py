@@ -11,20 +11,6 @@ from yatube import settings
 User = get_user_model()
 
 
-def check_func(self, response, bol=False):
-    """Вспомогательная функция для проверки корректного контекста"""
-    if bol:
-        post = response.context.get('post')
-    else:
-        post = response.context['page_obj'][0]
-    self.assertEqual(post.text, self.post.text)
-    self.assertEqual(post.author, self.author)
-    self.assertEqual(post.group, self.group)
-    self.assertEqual(post.pub_date, self.post.pub_date)
-    self.assertEqual(post.image, self.post.image)
-    self.assertContains(response, '<img')
-
-
 class CorrectTemplateTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -48,6 +34,19 @@ class CorrectTemplateTests(TestCase):
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
         cache.clear()
+
+    def check_func(self, response, bol=False):
+        """Вспомогательная функция для проверки корректного контекста"""
+        if bol:
+            post = response.context.get('post')
+        else:
+            post = response.context['page_obj'][0]
+        self.assertEqual(post.text, self.post.text)
+        self.assertEqual(post.author, self.author)
+        self.assertEqual(post.group, self.group)
+        self.assertEqual(post.pub_date, self.post.pub_date)
+        self.assertEqual(post.image, self.post.image)
+        self.assertContains(response, '<img')
 
     def test_index_pages_show_correct_context(self):
         """Проверка контекста в index"""
@@ -78,6 +77,22 @@ class CorrectTemplateTests(TestCase):
             'posts:post_detail', args=(self.post.id,))
         )
         self.check_func(response, True)
+
+    def test_no_post_for_unfollow(self):
+        """Нового поста нет у того, кто не подписан"""
+        response = self.authorized_client.get(
+            reverse('posts:follow_index')
+        )
+        content = response.context['page_obj']
+        self.assertNotIn(self.post, content)
+
+    def test_post_for_follow(self):
+        """Новая запись в index follow у подписчика"""
+        Follow.objects.create(user=self.user, author=self.author)
+        response = self.authorized_author.get(
+            reverse('posts:follow_index')
+        )
+        self.check_func(response)
 
     def test_create_edit_both_context(self):
         """Проверка контекста в create и edit"""
@@ -141,7 +156,7 @@ class PaginatorViewsTest(TestCase):
         cls.posts = [
             Post(
                 text=f'Тестовый пост {number_post}',
-                author=cls.user,
+                author=cls.author,
                 group=cls.group,
             )
             for number_post in range(settings.SORT13)
@@ -149,6 +164,8 @@ class PaginatorViewsTest(TestCase):
         Post.objects.bulk_create(cls.posts)
 
     def setUp(self):
+        self.authorized_user = Client()
+        self.authorized_user.force_login(self.user)
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
 
@@ -169,10 +186,14 @@ class PaginatorViewsTest(TestCase):
             with self.subTest(address=address):
                 for page, units in pages_units:
                     with self.subTest(page=page):
-                        response = self.authorized_author.get(
+                        response = self.authorized_user.get(
                             reverse(address, args=args) + page
                         )
         self.assertEqual(len(response.context['page_obj']), units)
+
+    # def test_pagin_in_follow_index(self):
+
+
 
 
 class CommentFollowTests(TestCase):
@@ -191,6 +212,19 @@ class CommentFollowTests(TestCase):
         self.authorized_follower_client.force_login(self.follower)
         self.authorized_following_client = Client()
         self.authorized_following_client.force_login(self.following)
+
+    def check_func(self, response, bol=False):
+        """Вспомогательная функция для проверки корректного контекста"""
+        if bol:
+            post = response.context.get('post')
+        else:
+            post = response.context['page_obj'][0]
+        self.assertEqual(post.text, self.post.text)
+        self.assertEqual(post.author, self.author)
+        self.assertEqual(post.group, self.group)
+        self.assertEqual(post.pub_date, self.post.pub_date)
+        self.assertEqual(post.image, self.post.image)
+        self.assertContains(response, '<img')
 
     def test_follow(self):
         """Тестирование подписки"""
@@ -228,19 +262,3 @@ class CommentFollowTests(TestCase):
         )
         follow_count2 = Follow.objects.count()
         self.assertEqual(follow_count, follow_count2)
-
-    def test_no_post_for_unfollow(self):
-        """Нового поста нет у того, кто не подписан"""
-        response = self.authorized_follower_client.get(
-            reverse('posts:follow_index')
-        )
-        content = response.context['page_obj']
-        self.assertNotIn(self.post, content)
-
-    def test_post_for_follow(self):
-        """Новая запись в index follow у подписчика"""
-        Follow.objects.create(user=self.user, author=self.author)
-        response = self.authorized_follower_client.get(
-            reverse('posts:follow_index')
-        )
-        self.check_func(response)
