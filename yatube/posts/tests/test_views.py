@@ -191,10 +191,6 @@ class PaginatorViewsTest(TestCase):
                         )
         self.assertEqual(len(response.context['page_obj']), units)
 
-    # def test_pagin_in_follow_index(self):
-
-
-
 
 class CommentFollowTests(TestCase):
     @classmethod
