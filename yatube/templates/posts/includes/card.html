@@ -24,23 +24,23 @@
   </div>
   <!--Post Info-->
   {% thumbnail post.image "1295x300" crop="center" as im %}
-  <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
   {% endthumbnail %}
   <div class="card-body">
-  <p class="card-text">{{ post.text|linebreaks }}</p>
-  <a href="{% url 'posts:post_detail' post.pk %}">
-    подробная информация
-  </a><br>
-  {% if not group %}
-    {% if post.group %}
-      <a href="{% url 'posts:group_list' post.group.slug %}">
-        все записи группы: {{ post.group }}
-      </a>
-    {% else %}
-      <span style='color: red'>Этой публикации нет ни в одном сообществе
-      </span>
+    <p class="card-text">{{ post.text|linebreaks }}</p>
+    <a href="{% url 'posts:post_detail' post.pk %}">
+      подробная информация
+    </a><br>
+    {% if not group %}
+      {% if post.group %}
+        <a href="{% url 'posts:group_list' post.group.slug %}">
+          все записи группы: {{ post.group }}
+        </a>
+      {% else %}
+        <span style='color: red'>Этой публикации нет ни в одном сообществе
+        </span>
+      {% endif %}
     {% endif %}
-  {% endif %}
   </div>
 {% if not forloop.last %}<hr>{% endif %}
 </article>

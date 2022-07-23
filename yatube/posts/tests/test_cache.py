@@ -30,14 +30,20 @@ class PaginatorViewsTest(TestCase):
 
     def test_cache_on_index_page_exists(self):
         """Кэширование данных на главной странице существует."""
-        response = self.authorized_client.get(reverse('posts:index'))
-        cache_response = response.content
+        post1 = Post.objects.create(
+            text='Тевст111ФФФ',
+            group=self.group,
+            author=self.author
+        )
+        cache_response = self.authorized_client.get(reverse('posts:index'))
         Post.objects.all().delete()
-        response = self.authorized_client.get(reverse('posts:index'))
-        cache_response_clear = response.content
-        self.assertEqual(
+        cache_response2 = self.authorized_client.get(reverse('posts:index'))
+        self.assertEqual(cache_response.content, cache_response2.content)
+        cache.clear()
+        response_cleared = self.authorized_client.get(reverse('posts:index'))
+        self.assertNotEqual(
             cache_response,
-            cache_response_clear
+            response_cleared
         )
 
     def test_cache_on_index_page_updates(self):

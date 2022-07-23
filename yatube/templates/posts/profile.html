@@ -11,16 +11,21 @@
       <div class="h1 pb-2 mb-4 text-danger border-bottom border-danger">
           <h1>Все посты пользователя {{ author.get_full_name }} </h1>
           <h3>Всего постов: {{ author.posts.count }}</h3>
-
-          {% if following %}
-            <a class="btn btn-lg btn-light" href="{% url 'posts:profile_unfollow' author.username %}" role="button">
-              Отписаться от автора
-            </a>
-          {% else %}
-            <a class="btn btn-lg btn-primary" href="{% url 'posts:profile_follow' author.username %}" role="button">
-              Подписаться на автора
-            </a>
+          <h5>Всего подписок: {{ author.follower.count }}</h5>
+          <h5>Всего подписчиков: {{ author.following.count }}</h5>
+          {% if request.user != author %}
+            {% if user.is_authenticated %}
+              {% if following %}
+                <a class="btn btn-lg btn-light" href="{% url 'posts:profile_unfollow' author.username %}" role="button">
+                  Отписаться от автора
+                </a>
+              {% else %}
+                <a class="btn btn-lg btn-primary" href="{% url 'posts:profile_follow' author.username %}" role="button">
+                  Подписаться на автора
+                </a>
               {% endif %}
+            {% endif %}
+          {% endif %}
       </div>
     </p>
       {% for post in page_obj %}

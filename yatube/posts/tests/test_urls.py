@@ -16,7 +16,7 @@ class FirstAccess(TestCase):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
         cls.author = User.objects.create_user(username='auth2')
-        # cls.author = User.objects.get(username='auth')
+        cls.author2 = User.objects.create_user(username='auth3')
         cls.group = Group.objects.create(
             title='Тестовая группа123',
             slug='testslug',
@@ -38,7 +38,11 @@ class FirstAccess(TestCase):
             ('posts:profile', (self.author,)),
             ('posts:post_detail', (self.post.id,)),
             ('posts:post_create', None),
-            ('posts:post_edit', (self.post.id,))
+            ('posts:post_edit', (self.post.id,)),
+            ('posts:add_comment', (self.post.id,)),
+            ('posts:follow_index', None),
+            ('posts:profile_follow', (self.author,)),
+            ('posts:profile_unfollow', (self.author,)),
         )
         cache.clear()
 
@@ -46,7 +50,14 @@ class FirstAccess(TestCase):
         """Доступность для гостя."""
         for address, args in self.urls_template:
             with self.subTest(address=address):
-                reverse_list = ['posts:post_create', 'posts:post_edit']
+                reverse_list = [
+                    'posts:post_create',
+                    'posts:post_edit',
+                    'posts:add_comment',
+                    'posts:follow_index',
+                    'posts:profile_follow',
+                    'posts:profile_unfollow'
+                ]
                 if address in reverse_list:
                     response = self.client.get(
                         reverse(address, args=args), follow=True
@@ -67,8 +78,21 @@ class FirstAccess(TestCase):
                 response = self.authorized_client.get(
                     reverse(address, args=args)
                 )
-                if address != 'posts:post_edit':
+                if address not in [
+                    'posts:post_edit',
+                    'posts:add_comment',
+                    'posts:profile_follow',
+                    'posts:profile_unfollow'
+                ]:
                     self.assertEqual(response.status_code, HTTPStatus.OK)
+                elif address in [
+                    'posts:profile_follow',
+                    'posts:profile_unfollow'
+                ]:
+                    rev_author = reverse(
+                        'posts:profile', args=(self.author,)
+                    )
+                    self.assertRedirects(response, rev_author)
                 else:
                     rev_detail = reverse(
                         'posts:post_detail', args=(self.post.id,)
@@ -82,7 +106,25 @@ class FirstAccess(TestCase):
                 response = self.authorized_author.get(
                     reverse(address, args=args)
                 )
-                self.assertEqual(response.status_code, HTTPStatus.OK)
+                if address not in [
+                    'posts:add_comment',
+                    'posts:profile_follow',
+                    'posts:profile_unfollow'
+                ]:
+                    self.assertEqual(response.status_code, HTTPStatus.OK)
+                elif address in [
+                    'posts:profile_follow',
+                    'posts:profile_unfollow'
+                ]:
+                    rev_author = reverse(
+                        'posts:profile', args=(self.author,)
+                    )
+                    self.assertRedirects(response, rev_author)
+                else:
+                    rev_detail = reverse(
+                        'posts:post_detail', args=(self.post.id,)
+                    )
+                    self.assertRedirects(response, rev_detail)
 
     def test_urls_guest_fakepage(self):
         """Ответ 404 на несуществующую страницу"""
@@ -98,7 +140,8 @@ class FirstAccess(TestCase):
             ('posts:profile', (self.author,), 'posts/profile.html'),
             ('posts:post_detail', (self.post.id,), 'posts/post_detail.html'),
             ('posts:post_create', None, 'posts/create_post.html'),
-            ('posts:post_edit', (self.post.id,), 'posts/create_post.html')
+            ('posts:post_edit', (self.post.id,), 'posts/create_post.html'),
+            ('posts:follow_index', None, 'posts/follow.html')
         )
         for address, args, template in templates_urls:
             with self.subTest(address=address):
@@ -117,7 +160,16 @@ class FirstAccess(TestCase):
             ('posts:post_detail', (self.post.id,), f'/posts/{self.post.id}/'),
             ('posts:post_create', None, '/create/'),
             ('posts:post_edit', (self.post.id,), f'/posts/'
-                                                 f'{self.post.id}/edit/')
+                                                 f'{self.post.id}/edit/'),
+            ('posts:add_comment', (self.post.id,), f'/posts/'
+                                                   f'{self.post.id}/comment/'),
+            ('posts:follow_index', None, '/follow/'),
+            ('posts:profile_follow', (self.author,), f'/profile/'
+                                                     f'{self.author}/follow/'),
+            ('posts:profile_unfollow', (self.author,), f'/profile/'
+                                                       f'{self.author}/'
+                                                       f'unfollow/'),
+
         )
         for address, args, links in reverse_urls:
             with self.subTest(address=address):

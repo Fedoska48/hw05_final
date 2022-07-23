@@ -184,16 +184,16 @@ class CommentFormsTest(TestCase):
         comm_count = self.post.comments.count()
         form_data = {
             'text': 'Новый комментарий',
+            'author': self.author
         }
         response = self.client.post(
             reverse('posts:add_comment', args=(self.post.id,)),
             data=form_data,
             follow=True,
         )
-        redirect = str(reverse('users:login') + '?next='
-                       + reverse('posts:add_comment',
-                                 args=(self.post.id,))
-                       )
+        rev_login = reverse('users:login')
+        rev_add_comment = reverse('posts:add_comment', args=(self.post.id,))
+        redirect = f'{rev_login}?next={rev_add_comment}'
         self.assertRedirects(response, redirect)
         self.assertEqual(self.post.comments.count(), comm_count)
 
@@ -206,3 +206,4 @@ class CommentFormsTest(TestCase):
         last_comm = self.post.comments.last()
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(last_comm.text, form_data['text'])
+        self.assertEqual(last_comm.author, form_data['author'])
