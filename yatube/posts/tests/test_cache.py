@@ -30,11 +30,6 @@ class PaginatorViewsTest(TestCase):
 
     def test_cache_on_index_page_exists(self):
         """Кэширование данных на главной странице существует."""
-        post1 = Post.objects.create(
-            text='Тевст111ФФФ',
-            group=self.group,
-            author=self.author
-        )
         cache_response = self.authorized_client.get(reverse('posts:index'))
         Post.objects.all().delete()
         cache_response2 = self.authorized_client.get(reverse('posts:index'))
