@@ -49,7 +49,8 @@ def profile(request, username):
 def post_detail(request, post_id):
     post = get_object_or_404(
         Post.objects.select_related('author').prefetch_related(
-            'comments'), id=post_id)
+            'comments__author'), id=post_id
+    )
     form = CommentForm(
         request.POST or None,
         files=request.FILES or None
