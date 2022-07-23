@@ -7,7 +7,7 @@
 {% block content %}
   <div class="container py-5">
     {% load cache %}
-    {% cache 10 page_obj %}
+    {% cache 30 sidebar index page_obj.number %}
       <h1>Последние обновления на сайте</h1>
     {% for post in page_obj %}
       {% include 'posts/includes/card.html' %}

@@ -12,17 +12,17 @@
         <li class="list-group-item">
           Дата публикации: {{ post.pub_date|date:"d E Y" }}
         </li>
-            {% if post.group %}
-              <li class="list-group-item">
-                Группа:
-                 <a href="{% url 'posts:group_list' post.group.slug %}">
-                   {{ post.group }}
-                 <a>
-              </li>
-              {% else %}
-              <li class="list-group-item">
-              Отсутствует группа
-              {% endif %}
+        {% if post.group %}
+          <li class="list-group-item">
+            Группа:
+            <a href="{% url 'posts:group_list' post.group.slug %}">
+              {{ post.group }}
+            </a>
+          </li>
+          {% else %}
+            <li class="list-group-item">
+            Отсутствует группа
+          {% endif %}
               </li>
                 <li class="list-group-item">
                   Автор: {{ post.author }}

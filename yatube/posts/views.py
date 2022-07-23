@@ -7,7 +7,6 @@ from .models import Group, Post, User, Follow
 from .utils import pagination
 
 
-@cache_page(20, key_prefix='index_page')
 def index(request):
     posts = Post.objects.select_related('group', 'author').all()
     page_obj = pagination(request, posts)
@@ -132,7 +131,5 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    author = get_object_or_404(User, username=username)
-    if request.user != author:
-        Follow.objects.filter(author__username=username).delete()
+    Follow.objects.filter(author__username=username).delete()
     return redirect('posts:profile', username=username)

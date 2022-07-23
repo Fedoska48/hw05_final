@@ -2,7 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 SECRET_KEY = '8$3x&ylq_3jx%yje@&j*r_2z^q0-+qmtrx+0#_p^u2npbcbol+'
 

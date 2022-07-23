@@ -11,6 +11,20 @@ from yatube import settings
 User = get_user_model()
 
 
+def check_func(self, response, bol=False):
+    """Вспомогательная функция для проверки корректного контекста"""
+    if bol:
+        post = response.context.get('post')
+    else:
+        post = response.context['page_obj'][0]
+    self.assertEqual(post.text, self.post.text)
+    self.assertEqual(post.author, self.author)
+    self.assertEqual(post.group, self.group)
+    self.assertEqual(post.pub_date, self.post.pub_date)
+    self.assertEqual(post.image, self.post.image)
+    self.assertContains(response, '<img')
+
+
 class CorrectTemplateTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -34,19 +48,6 @@ class CorrectTemplateTests(TestCase):
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
         cache.clear()
-
-    def check_func(self, response, bol=False):
-        """Вспомогательная функция для проверки корректного контекста"""
-        if bol:
-            post = response.context.get('post')
-        else:
-            post = response.context['page_obj'][0]
-        self.assertEqual(post.text, self.post.text)
-        self.assertEqual(post.author, self.author)
-        self.assertEqual(post.group, self.group)
-        self.assertEqual(post.pub_date, self.post.pub_date)
-        self.assertEqual(post.image, self.post.image)
-        self.assertContains(response, '<img')
 
     def test_index_pages_show_correct_context(self):
         """Проверка контекста в index"""
@@ -77,14 +78,6 @@ class CorrectTemplateTests(TestCase):
             'posts:post_detail', args=(self.post.id,))
         )
         self.check_func(response, True)
-
-    def test_post_for_follow(self):
-        """Новая запись в index follow """
-        Follow.objects.create(user=self.user, author=self.author)
-        response = self.authorized_client.get(
-            reverse('posts:follow_index')
-        )
-        self.check_func(response)
 
     def test_create_edit_both_context(self):
         """Проверка контекста в create и edit"""
@@ -139,7 +132,7 @@ class PaginatorViewsTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
-        cls.author = User.objects.get(username='auth')
+        cls.author = User.objects.create_user(username='auth2')
         cls.group = Group.objects.create(
             title='Тестовая группа123',
             slug='test-slug',
@@ -164,13 +157,14 @@ class PaginatorViewsTest(TestCase):
         pagin_urls = (
             ('posts:index', None),
             ('posts:group_list', (self.group.slug,)),
-            ('posts:profile', (self.user.username,))
+            ('posts:profile', (self.user.username,)),
+            ('posts:follow_index', None)
         )
         pages_units = (
             ('?page=1', settings.SORT10),
             ('?page=2', settings.SORT13 - settings.SORT10)
         )
-
+        Follow.objects.create(user=self.user, author=self.author)
         for address, args in pagin_urls:
             with self.subTest(address=address):
                 for page, units in pages_units:
@@ -242,3 +236,11 @@ class CommentFollowTests(TestCase):
         )
         content = response.context['page_obj']
         self.assertNotIn(self.post, content)
+
+    def test_post_for_follow(self):
+        """Новая запись в index follow у подписчика"""
+        Follow.objects.create(user=self.user, author=self.author)
+        response = self.authorized_follower_client.get(
+            reverse('posts:follow_index')
+        )
+        self.check_func(response)
